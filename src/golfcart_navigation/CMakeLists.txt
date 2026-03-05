@@ -12,7 +12,7 @@ foreach(required_dir IN ITEMS launch params rviz2 maps)
   endif()
 endforeach()
 
-install(DIRECTORY launch params rviz2 maps
+install(DIRECTORY launch params maps rviz2
   DESTINATION share/${PROJECT_NAME}
 )
 
