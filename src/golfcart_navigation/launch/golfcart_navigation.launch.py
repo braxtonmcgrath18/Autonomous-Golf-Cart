@@ -129,6 +129,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='True'),
+        DeclareLaunchArgument('map', default_value=map_dir),
         DeclareLaunchArgument('params_file', default_value=params_file),
         DeclareLaunchArgument('rviz_config', default_value=rviz_config),
         DeclareLaunchArgument('camera_model', default_value=camera_model),
