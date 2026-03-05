@@ -5,7 +5,6 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -19,10 +18,18 @@ def generate_launch_description():
         'maps',
         'racetrackmap.yaml',
     )
+    default_zed_cvt_config = os.path.join(
+        get_package_share_directory('golfcart_bringup'),
+        'config',
+        'zed_depth_to_laserscan_nav2.yaml',
+    )
 
     params_file = LaunchConfiguration('params_file')
     map_yaml = LaunchConfiguration('map')
-    zed_cloud = LaunchConfiguration('zed_cloud')
+    zed_camera_name = LaunchConfiguration('zed_camera_name')
+    zed_node_name = LaunchConfiguration('zed_node_name')
+    zed_camera_model = LaunchConfiguration('zed_camera_model')
+    zed_cvt_config = LaunchConfiguration('zed_cvt_config')
 
     nav_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -40,22 +47,24 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Convert incoming ZED pointcloud to LaserScan for AMCL/Nav2.
-    pointcloud_to_scan = Node(
-        package='pointcloud_to_laserscan',
-        executable='pointcloud_to_laserscan_node',
-        name='pointcloud_to_laserscan',
-        output='screen',
-        remappings=[
-            ('cloud_in', zed_cloud),
-            ('scan', '/zed/scan'),
-        ],
-        parameters=[{
-            'range_min': 0.5,
-            'range_max': 20.0,
-            'scan_time': 0.1,
-            'use_inf': True,
-        }],
+    # Stereolabs converter package. With camera_name=zed and zed_node_name=zed_node,
+    # input depth is /zed/zed_node/depth/depth_registered and output scan is /zed/scan.
+    zed_depth_to_scan = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('zed_depth_to_laserscan'),
+                'launch',
+                'zed_depth_to_laserscan.launch.py',
+            )
+        ),
+        launch_arguments={
+            'camera_name': zed_camera_name,
+            'zed_node_name': zed_node_name,
+            'camera_model': zed_camera_model,
+            'config_path_cvt': zed_cvt_config,
+            'rviz': 'false',
+            'publish_urdf': 'false',
+        }.items(),
     )
 
     return LaunchDescription([
@@ -70,10 +79,25 @@ def generate_launch_description():
             description='Path to existing map yaml used by nav2_map_server',
         ),
         DeclareLaunchArgument(
-            'zed_cloud',
-            default_value='/zed/zed_node/point_cloud/cloud_registered',
-            description='Input PointCloud2 topic used to generate /zed/scan',
+            'zed_camera_name',
+            default_value='zed',
+            description='ZED namespace; determines /<camera_name>/scan output topic',
         ),
-        pointcloud_to_scan,
+        DeclareLaunchArgument(
+            'zed_node_name',
+            default_value='zed_node',
+            description='ZED node name; determines depth input topic path',
+        ),
+        DeclareLaunchArgument(
+            'zed_camera_model',
+            default_value='zed2i',
+            description='ZED camera model for zed_depth_to_laserscan launch',
+        ),
+        DeclareLaunchArgument(
+            'zed_cvt_config',
+            default_value=default_zed_cvt_config,
+            description='Depth-to-laserscan parameter file path',
+        ),
+        zed_depth_to_scan,
         nav_launch,
     ])
