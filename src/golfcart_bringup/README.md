@@ -40,3 +40,19 @@ Notes:
 2. Click `2D Pose Estimate` in the toolbar.
 3. Click on the robot's location in the map, drag to indicate heading, and release.
 4. Confirm `map -> odom` appears in TF and AMCL pose begins updating.
+
+## Smoke Check
+
+Run these after bringup:
+
+```bash
+ros2 lifecycle get /map_server
+ros2 param get /map_server yaml_filename
+ros2 lifecycle get /amcl
+ros2 topic info /zed/scan
+ros2 run tf2_ros tf2_echo map odom
+```
+
+RViz quick check:
+1. Set `Fixed Frame` to `map`.
+2. Use `2D Pose Estimate` to initialize AMCL pose on the map.

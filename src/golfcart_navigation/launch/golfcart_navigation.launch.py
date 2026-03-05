@@ -2,20 +2,20 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='True')
+    autostart = LaunchConfiguration('autostart', default='true')
+    scan_experiment = LaunchConfiguration('scan_experiment', default='false')
 
-    map_dir = LaunchConfiguration(
-        "map",
-        default=os.path.join(
-            get_package_share_directory("golfcart_navigation"), "maps", "racetrackmap.yaml"
-        ),
+    default_map = os.path.join(
+        get_package_share_directory("golfcart_navigation"), "maps", "racetrackmap.yaml"
     )
+    map_dir = LaunchConfiguration("map")
 
     params_file = LaunchConfiguration(
         'params_file',
@@ -44,6 +44,7 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'map': map_dir,
             'params_file': params_file,
+            'autostart': autostart,
         }.items(),
 )
 
@@ -82,6 +83,7 @@ def generate_launch_description():
             'params_file': params_file,
             'slam': 'False',
             'use_docking': 'False',
+            'autostart': autostart,
         }.items(),
     )
 
@@ -89,12 +91,13 @@ def generate_launch_description():
     # It will normally publish /zed/scan; we remap that to /scan so Nav2 stays unchanged.
     zed_depth_to_scan = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare('zed_depth_to_laserscan'),
+            os.path.join(
+                get_package_share_directory('zed_depth_to_laserscan'),
                 'launch',
                 'zed_depth_to_laserscan.launch.py',
-            ])
+            )
         ),
+        condition=IfCondition(scan_experiment),
         launch_arguments={
             'camera_model': camera_model,
             'rviz': 'false',
@@ -129,7 +132,9 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='True'),
-        DeclareLaunchArgument('map', default_value=map_dir),
+        DeclareLaunchArgument('map', default_value=default_map),
+        DeclareLaunchArgument('autostart', default_value='true'),
+        DeclareLaunchArgument('scan_experiment', default_value='false'),
         DeclareLaunchArgument('params_file', default_value=params_file),
         DeclareLaunchArgument('rviz_config', default_value=rviz_config),
         DeclareLaunchArgument('camera_model', default_value=camera_model),
