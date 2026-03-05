@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>golfcart_navigation</name>
+  <version>0.1.0</version>
+  <description>Nav2 bringup wrapper for an Ackermann golf cart in Isaac Sim (ZED pointcloud -> LaserScan, cmd_vel -> Ackermann).</description>
+  <maintainer email="you@todo.invalid">SDSU Senior Design</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
+  <exec_depend>nav2_lifecycle_manager</exec_depend>
+
+  <exec_depend>pointcloud_to_laserscan</exec_depend>
+  <exec_depend>cmdvel_to_ackermann</exec_depend>
+
+  <exec_depend>rviz2</exec_depend>
+</package>

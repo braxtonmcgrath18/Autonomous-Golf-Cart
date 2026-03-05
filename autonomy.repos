@@ -1,0 +1,14 @@
+# VCS manifest for source dependencies used with vcstool.
+# Usage:
+#   cd ~/golfcart_ws/src
+#   vcs import < ../autonomy.repos
+# Keep this file minimal: include only non-apt or pinned source dependencies.
+
+repositories: {}
+
+# Likely future source dependencies (commented out until needed):
+# repositories:
+#   navigation2:
+#     type: git
+#     url: https://github.com/ros-navigation/navigation2.git
+#     version: <pin-to-tag-or-commit>
